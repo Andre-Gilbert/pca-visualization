@@ -1,6 +1,8 @@
 """Manim entrypoint."""
 from manim import PINK, YELLOW, Circle, Create, Scene
 
+from utils import fade_out_scene
+
 
 class CreateCircle(Scene):
     def construct(self):
@@ -23,3 +25,4 @@ class PCA(Scene):
         scenes = [CreateCircle, CreateCircle2]
         for scene in scenes:
             scene.construct(self)
+            fade_out_scene(self)
