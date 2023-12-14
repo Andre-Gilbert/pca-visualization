@@ -138,7 +138,8 @@ disable=abstract-method,
         using-cmp-argument,
         wrong-import-order,
         xrange-builtin,
-        zip-builtin-not-iterating
+        zip-builtin-not-iterating,
+        wildcard-import
 
 
 [REPORTS]
