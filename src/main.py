@@ -6,7 +6,7 @@ from pca import PCAExplained
 from utils import fade_out_scene
 
 
-class PCA(Scene):
+class PCA(ThreeDScene):
     """Class that implements a manim scene for visualizing principal component analysis."""
 
     def construct(self) -> None:
