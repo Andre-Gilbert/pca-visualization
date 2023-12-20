@@ -2,14 +2,14 @@
 from manim import *
 
 
-class PCAExplained(Scene):
+class PCAExplained(ThreeDScene):
     def construct(self):
         axes = ThreeDAxes()
-        self.set_camera_orientation(phi=75 * DEGREES, theta=-45 * DEGREES)
-        text3d = Text("This is a 3D text")
-        self.add_fixed_in_frame_mobjects(text3d)
-        text = MathTex("\\frac{d}{dx}f(x)g(x)=", "f(x)\\frac{d}{dx}g(x)", "+", "g(x)\\frac{d}{dx}f(x)")
-        self.play(Write(text))
-        text3d.to_corner(UL)
-        self.add(axes)
+        circle = Circle()
+        self.set_camera_orientation(phi=75 * DEGREES, theta=30 * DEGREES)
+        self.add(circle, axes)
+        self.begin_ambient_camera_rotation(rate=0.1)
+        self.wait()
+        self.stop_ambient_camera_rotation()
+        self.move_camera(phi=75 * DEGREES, theta=30 * DEGREES)
         self.wait()
