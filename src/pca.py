@@ -5,6 +5,11 @@ import pandas as pd
 
 class PCAExplained(ThreeDScene):
     def construct(self):
+        # TODO: Add the corresponding formulas.
+        # TODO: Since we re-use this scene multiple times throughout the video, we want to make the rendering of the formulas optional.
+        # TODO: When performing the transformation, move the camera so that we watch the transfromation from the direction of first eigenvector.
+            # --> Ideally this should be calculated on the fly so that the scene also works with other datasets.
+        
         # Create axes
         axes = ThreeDAxes()
         self.set_camera_orientation(phi=75 * DEGREES, theta=30 * DEGREES)
