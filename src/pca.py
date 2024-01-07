@@ -19,19 +19,6 @@ def pca_graph(scene: ThreeDScene):
     points_data = data.values  # Assuming columns are x, y, z
     points_meaned = points_data - np.mean(points_data, axis=0)
 
-    # Create scatter plot using Points class
-    scatter_points = VGroup(*[Dot3D(point=np.array(point), color=BLUE, radius=0.05) for point in points_data])
-
-    # Add scatter plot to the scene
-    scene.play(Create(axes))
-    scene.play(Create(scatter_points))
-    scene.wait(2)
-
-    # Now set morph the points into centered position around the origin.
-    scatter_points_meaned = VGroup(*[Dot3D(point=np.array(point), color=BLUE, radius=0.05) for point in points_meaned])
-
-    scene.play(Transform(scatter_points, scatter_points_meaned))
-
     # Now perform the PCA transformation
     num_features = data.shape[1]
     cov_matrix = (1 / num_features) * (points_meaned.T @ points_meaned)
@@ -44,6 +31,19 @@ def pca_graph(scene: ThreeDScene):
 
     # num_components = 2 # Later/optional: perform dimensionality reduction.
     points_transformed = (eigen_vectors_sorted.T @ points_meaned.T).T
+
+    # Create scatter plot using Points class
+    scatter_points = VGroup(*[Dot3D(point=np.array(point), color=BLUE, radius=0.05) for point in points_data])
+
+    # Add scatter plot to the scene
+    scene.play(Create(axes))
+    scene.play(Create(scatter_points))
+    scene.wait(2)
+
+    # Now set morph the points into centered position around the origin.
+    scatter_points_meaned = VGroup(*[Dot3D(point=np.array(point), color=BLUE, radius=0.05) for point in points_meaned])
+
+    scene.play(Transform(scatter_points, scatter_points_meaned))
 
     # Animate transformation
     scatter_points_transformed = VGroup(
