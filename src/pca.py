@@ -7,6 +7,7 @@ from utils import get_pca_elements
 
 def pca_graph(scene: ThreeDScene, formulas: bool = True):
     # Create axes
+    # TODO: Create custom axes with tips on both sides.
     axes = ThreeDAxes()
     scene.set_camera_orientation(phi=75 * DEGREES, theta=30 * DEGREES)
     scene.begin_ambient_camera_rotation(rate=0.2)
@@ -97,8 +98,6 @@ def pca_graph(scene: ThreeDScene, formulas: bool = True):
     scatter_points.set_opacity(0)
     scene.play(Transform(scatter_points_meaned, scatter_points_transformed))
 
-    # self.stop_ambient_camera_rotation()
-    # self.move_camera(phi=75 * DEGREES, theta=30 * DEGREES)
     scene.wait(1)
 
 
