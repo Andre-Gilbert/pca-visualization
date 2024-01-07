@@ -65,7 +65,7 @@ def create_large_table():
     return Tex(table).shift(LEFT * 1.5)
 
 
-def get_pca_elements(data_path: str = "src/assets/data_points.csv") -> tuple:
+def get_pca_elements(data_path: str = "assets/data_points.csv") -> tuple:
     "Returns all elements that are part of the PCA calculation for the dataset at the specified path."
 
     # Read data from CSV
