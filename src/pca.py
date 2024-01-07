@@ -1,8 +1,8 @@
 """PCA scene."""
-import pandas as pd
 from manim import *
 
 from constants import Formulas
+from utils import get_pca_elements
 
 
 def pca_graph(scene: ThreeDScene):
@@ -11,26 +11,7 @@ def pca_graph(scene: ThreeDScene):
     scene.set_camera_orientation(phi=75 * DEGREES, theta=30 * DEGREES)
     scene.begin_ambient_camera_rotation(rate=0.2)
 
-    # Read data from CSV
-    # For debugging, we use only a small number of points.
-    data = pd.read_csv(
-        "src/assets/data_points.csv"
-    )  # NOTE: Eventually we want to create and use a synthetic dataset that is comprised hundreds of points.
-    points_data = data.values  # Assuming columns are x, y, z
-    points_meaned = points_data - np.mean(points_data, axis=0)
-
-    # Now perform the PCA transformation
-    num_features = data.shape[1]
-    cov_matrix = (1 / num_features) * (points_meaned.T @ points_meaned)
-
-    eigen_values, eigen_vectors = np.linalg.eigh(cov_matrix)
-
-    sorted_indices = np.argsort(eigen_values)[::-1]  # Get indices that would sort eigen_values in descending order
-    eigen_values_sorted = eigen_values[sorted_indices]  # For later animations
-    eigen_vectors_sorted = eigen_vectors[:, sorted_indices]
-
-    # num_components = 2 # Later/optional: perform dimensionality reduction.
-    points_transformed = (eigen_vectors_sorted.T @ points_meaned.T).T
+    points_data, points_meaned, cov_matrix, (eigen_values_sorted, eigen_vectors_sorted), points_transformed = get_pca_elements()
 
     # Create scatter plot using Points class
     scatter_points = VGroup(*[Dot3D(point=np.array(point), color=BLUE, radius=0.05) for point in points_data])

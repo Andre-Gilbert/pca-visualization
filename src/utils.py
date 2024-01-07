@@ -1,5 +1,6 @@
 """Scene utilities."""
 from manim import *
+import pandas as pd
 
 
 def fade_out_scene(scene):
@@ -62,3 +63,30 @@ def create_large_table():
         \end{table}
         """
     return Tex(table).shift(LEFT * 1.5)
+
+
+def get_pca_elements(data_path: str = "src/assets/data_points.csv") -> tuple:
+    "Returns all elements that are part of the PCA calculation for the dataset at the specified path."
+
+    # Read data from CSV
+
+    # For debugging, we use only a small number of points.
+    # NOTE: Eventually we want to create and use a synthetic dataset that is comprised hundreds of points.
+    data = pd.read_csv(data_path)
+    
+    points_data = data.values  # Assuming columns are x, y, z
+    points_meaned = points_data - np.mean(points_data, axis=0)
+
+    # Now perform the PCA transformation
+    num_features = data.shape[1]
+    cov_matrix = (1 / num_features) * (points_meaned.T @ points_meaned)
+
+    eigen_values, eigen_vectors = np.linalg.eigh(cov_matrix)
+
+    sorted_indices = np.argsort(eigen_values)[::-1]  # Get indices that would sort eigen_values in descending order
+    eigen_values_sorted = eigen_values[sorted_indices]  # For later animations
+    eigen_vectors_sorted = eigen_vectors[:, sorted_indices]
+
+    points_transformed = (eigen_vectors_sorted.T @ points_meaned.T).T
+
+    return points_data, points_meaned, cov_matrix, (eigen_values_sorted, eigen_vectors_sorted), points_transformed
