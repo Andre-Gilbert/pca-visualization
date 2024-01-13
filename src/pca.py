@@ -174,6 +174,54 @@ def pca_graph(scene: ThreeDScene, formulas: bool = True, variance_vectors: bool 
     scatter_points.set_opacity(0)
     scene.play(Transform(scatter_points_meaned, scatter_points_transformed))
 
+    scene.wait(0.5)
+    
+    # Show off how now most of the variance is on the first two dimensions.
+    scene.move_camera(phi=90 * DEGREES, theta=theta, run_time=3)
+    scene.begin_ambient_camera_rotation(0.2)
+
+    scene.wait(5)
+
+    if show_scree_plot:
+        fade_out_scene(scene)
+        scree_plot(scene, eigen_values_sorted)
+        scene.wait(1)
+
+
+def scree_plot(scene: ThreeDScene, eigen_values: np.ndarray) -> None:
+    """
+    Scene to show the Scree plot belonging to the PCA.
+
+    Parameters:
+    - scene: ThreeDScene, Scene to render into
+    - eigen_values: np.ndarray, Ordered list of eigenvalues.
+
+    returns: None
+    """
+
+    eigen_values_sum = eigen_values.sum()
+    variance_shares = [round((eigen_value/eigen_values_sum) * 100, 1) for eigen_value in eigen_values]
+    agg_variance_shares = [round(value + sum(variance_shares[:i]), 3) if i > 0 else value for i, value in enumerate(variance_shares)]
+    chart = BarChart(
+        values=agg_variance_shares,
+        bar_names=["1 PC", "2 PCs", "3 PCs"],
+        bar_colors=[DARK_BLUE, DARK_BLUE, DARK_BLUE],
+        y_range=[0, 100, 10],
+        y_length=6,
+        x_length=8,
+        x_axis_config={"font_size": FontSize.HEADING3}
+    )
+    c_bar_lbls = chart.get_bar_labels(font_size=48, color=WHITE)
+    y_label = Text("Variance Explained (%)", font_size=FontSize.HEADING3).rotate(90*DEGREES).next_to(chart.y_axis, LEFT)
+    scene.add_fixed_in_frame_mobjects(chart)
+    scene.add_fixed_in_frame_mobjects(c_bar_lbls)
+    scene.add_fixed_in_frame_mobjects(y_label)
+    scene.play(Create(chart), Create(c_bar_lbls), Write(y_label))
+    scene.wait(2)
+    scene.play(FadeOut(chart), FadeOut(c_bar_lbls), FadeOut(y_label))
+
+
+
 
 class PCAExplained(ThreeDScene):
     def construct(self):
