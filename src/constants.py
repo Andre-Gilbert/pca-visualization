@@ -17,5 +17,5 @@ class Formulas:
         r"\operatorname{cov}[X_i, X_j] = \operatorname{E}[(X_i - \operatorname{E}[X_i])(X_j - \operatorname{E}[X_j])]"
     )
     COVARIANCE_SIMPLIFIED = MathTex(r"\operatorname{cov}[X_i, X_j] = \operatorname{E}[X_i \cdot X_j]")
-    COVARIANCE_MATRIX = MathTex(r"Cov(X) = \frac{1}{m}(B^TB)")
+    COVARIANCE_MATRIX = MathTex(r"Cov(B) = \frac{1}{m}(B^TB)")
     PRINCIPAL_COMPONENTS = MathTex(r"T = (E_b^T \cdot B^T)^T")
