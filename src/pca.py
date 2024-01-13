@@ -8,7 +8,30 @@ from utils import get_pca_elements
 def pca_graph(scene: ThreeDScene, formulas: bool = True):
     # Create axes
     # TODO: Create custom axes with tips on both sides.
-    axes = ThreeDAxes()
+    axes = ThreeDAxes(tips=False).set_opacity(0)
+
+    # Create double arrows for each axis
+    axis_extension_for_arrow = .6
+    x_axis_double_arrow = DoubleArrow(axes.x_axis.get_end() + (axis_extension_for_arrow, 0, 0), axes.x_axis.get_start() + (-axis_extension_for_arrow, 0, 0), buff=0, stroke_width=2.0)
+    y_axis_double_arrow = DoubleArrow(axes.y_axis.get_end() + (0, axis_extension_for_arrow, 0), axes.y_axis.get_start() + (0, -axis_extension_for_arrow, 0), buff=0, stroke_width=2.0)
+    
+    # Z-Axis arrow was buggy using the DoubleArrow (buckling tip on one side)
+    # Thus, we are using two seperate arrows.
+    z_axis_negative_arrow = Arrow((0, 0, 0), axes.z_axis.get_start() + (0, 0, -axis_extension_for_arrow), buff=0, stroke_width=2.0)
+    z_axis_positive_arrow = Arrow((0, 0, 0), axes.z_axis.get_end() + (0, 0, axis_extension_for_arrow), buff=0, stroke_width=2.0)
+
+    axes_arrows = x_axis_double_arrow, y_axis_double_arrow, z_axis_negative_arrow, z_axis_positive_arrow
+
+    # Add arrows to the scene
+    scene.add(axes, *axes_arrows)
+
+    # Optionally, add labels or other elements to enhance the visualization
+    # They look a little ugly in 3D though.
+    # x_label = axes.get_x_axis_label("x")
+    # y_label = axes.get_y_axis_label("y")
+    # z_label = axes.get_z_axis_label("z")
+    # scene.add(x_label, y_label, z_label)
+
     scene.set_camera_orientation(phi=75 * DEGREES, theta=30 * DEGREES)
     scene.begin_ambient_camera_rotation(rate=0.2)
 
@@ -18,7 +41,10 @@ def pca_graph(scene: ThreeDScene, formulas: bool = True):
     scatter_points = VGroup(*[Dot3D(point=np.array(point), color=BLUE, radius=0.05) for point in points_data])
 
     # Add scatter plot to the scene
+    scene.play(Create(x_axis_double_arrow), Create(y_axis_double_arrow), Create(z_axis_negative_arrow), Create(z_axis_positive_arrow))
+    axes = axes.set_opacity(1)
     scene.play(Create(axes))
+    scene.wait(.5)
     scene.play(Create(scatter_points))
     scene.wait(2)
 
@@ -32,7 +58,7 @@ def pca_graph(scene: ThreeDScene, formulas: bool = True):
         scene.move_camera(phi=75 * DEGREES, theta=76.5 * DEGREES)
 
         # Play the shift and scale animations in parallel
-        group = VGroup(axes, scatter_points)
+        group = VGroup(axes, scatter_points, *axes_arrows)
         scene.play(group.animate.scale(scale_factor))
         scene.play(group.animate.shift(RIGHT * shift_amount))
 
@@ -56,7 +82,7 @@ def pca_graph(scene: ThreeDScene, formulas: bool = True):
 
     if formulas:
         # First let the axes and points disappear temoprarily.
-        group = VGroup(scatter_points, scatter_points_meaned, axes)
+        group = VGroup(scatter_points, scatter_points_meaned, axes, *axes_arrows)
         scene.play(FadeOut(group), Unwrite(data_centering_formula))
 
         # Now show the derivation of the covariance calculation.
