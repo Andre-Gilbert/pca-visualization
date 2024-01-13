@@ -90,3 +90,32 @@ def get_pca_elements(data_path: str = "assets/data_points.csv") -> tuple:
     points_transformed = (eigen_vectors_sorted.T @ points_meaned.T).T
 
     return points_data, points_meaned, cov_matrix, (eigen_values_sorted, eigen_vectors_sorted), points_transformed
+
+
+def calculate_view_pos(vector: np.ndarray, ndigits: int = 3) -> tuple[float]:
+
+    """
+    Calculates the azimuthal and vertical angle to look from the direction
+    of a given vector.
+
+    Parameters:
+    - vector: np.array, the 3D vector.
+    - ndigits: int, number of after decimal digits when rounding.
+
+    Returns:
+    - phi: float, the polar angle in radiants.
+    - theta: float, the azimuthal angle in radiants.
+    """
+
+    # Calculate the polar angle (phi)
+    phi = np.arccos(vector[2] / np.linalg.norm(vector))
+
+    theta = np.arccos
+
+    # Calculate the azimuthal angle (theta)
+    if vector[0] == 0:
+        theta = np.pi / 2 if vector[1] > 0 else -np.pi / 2
+    else:
+        theta = np.arctan(vector[1] / vector[0])
+
+    return round(phi, ndigits=ndigits), round(theta, ndigits=ndigits)

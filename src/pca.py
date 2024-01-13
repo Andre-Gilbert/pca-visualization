@@ -1,14 +1,17 @@
 """PCA scene."""
 from manim import *
 
-from constants import Formulas
-from utils import get_pca_elements
+from constants import Formulas, FontSize
+from utils import get_pca_elements, calculate_view_pos, fade_out_scene
 
 
-def pca_graph(scene: ThreeDScene, formulas: bool = True):
+def pca_graph(scene: ThreeDScene, formulas: bool = True, variance_vectors: bool = True, show_scree_plot: bool = True):
     # Create axes
-    # TODO: Create custom axes with tips on both sides.
     axes = ThreeDAxes(tips=False).set_opacity(0)
+    # scene.add(axes) # Comment out before flight
+
+    # scene.set_camera_orientation(phi=75 * DEGREES, theta=-40 * DEGREES, zoom=3)
+    # scene.play(Create(Arrow3D(ORIGIN, (-.02, -.03, 0))))
 
     # Create double arrows for each axis
     axis_extension_for_arrow = .6
@@ -55,7 +58,7 @@ def pca_graph(scene: ThreeDScene, formulas: bool = True):
     shift_amount = 2
     scale_factor = 0.8
     if formulas:
-        scene.move_camera(phi=75 * DEGREES, theta=76.5 * DEGREES)
+        scene.move_camera(phi=75 * DEGREES, theta=135 * DEGREES)
 
         # Play the shift and scale animations in parallel
         group = VGroup(axes, scatter_points, *axes_arrows)
@@ -117,14 +120,59 @@ def pca_graph(scene: ThreeDScene, formulas: bool = True):
         scene.wait(2)
 
 
+    if variance_vectors:
+        scene.begin_ambient_camera_rotation(rate=0.2)
+        # Add colored infinite lines indicating the directions of greatest variance.
+        eigenvector_lines = VGroup()
+        for i, eigenvector in enumerate(eigen_vectors_sorted):
+            color = [RED, GREEN, BLUE][i]  # Use different colors for each eigenvector
+            infinite_line_positive = Line(start=ORIGIN, end=10 * eigenvector, color=color)
+            infinite_line_negative = Line(start=ORIGIN, end=-10 * eigenvector, color=color)
+            eigenvector_lines.add(infinite_line_positive)
+            eigenvector_lines.add(infinite_line_negative)
+
+        scene.play(Create(eigenvector_lines))
+        scene.wait(1)
+
+        # Add eigenvectors
+        eigenvector_arrows = VGroup(*[Arrow3D(start=ORIGIN, end=eigenvector, color=color, thickness=0.015, base_radius=0.05) for eigenvector, color in zip(eigen_vectors_sorted, [RED, GREEN, BLUE])])
+        scene.play(Create(eigenvector_arrows))
+        scene.wait(1)
+
+        # Fade out the lines that got replaced by the arrows.
+        scene.play(FadeOut(eigenvector_lines))
+        scene.wait(1)
+
+        # Scale eigenvectors by eigenvalues and display eigenvalues
+        scaled_eigenvectors = VGroup()
+        for i, (eigenvector, eigenvalue) in enumerate(zip(eigen_vectors_sorted, eigen_values_sorted)):
+            color = [RED, GREEN, BLUE][i]  # Use different colors for each eigenvector
+            scaled_eigenvector = Arrow3D(start=ORIGIN, end=eigenvalue * eigenvector, color=color, thickness=0.015, base_radius=0.05)
+            scaled_eigenvectors.add(scaled_eigenvector)
+
+        # Display eigenvalues next to scaled eigenvectors
+        # NOTE: Keeping the orientation so that the number faces the viewer frontally at all times is not natively possible in Manim, hence we omit the eigenvalue labels as they are not needed to convey the message.
+        # eigenvalue_labels = VGroup(*[Text(f"{eigenvalue:.2f}", color=WHITE).next_to(scaled_eigenvector, direction=DOWN, buff=0.1) for eigenvalue, scaled_eigenvector in zip(eigen_values_sorted, scaled_eigenvectors)])
+
+        scene.play(Transform(eigenvector_arrows, scaled_eigenvectors))
+        scene.wait(2)
+
+        scene.play(FadeOut(scaled_eigenvectors), FadeOut(eigenvector_arrows))
+        scene.stop_ambient_camera_rotation()
+        scene.wait(0.5)
+
+    # Move camera for transformation
+    # Looking from the angle of the third PC, we can observe how most of the variance is preserved.
+    phi, theta = calculate_view_pos(eigen_vectors_sorted[-1])
+    scene.move_camera(phi=phi, theta=theta, run_time=4)
+    scene.wait(1)
+
     # Animate transformation
     scatter_points_transformed = VGroup(
         *[Dot3D(point=np.array(point), color=BLUE, radius=0.05) for point in points_transformed]
     )
     scatter_points.set_opacity(0)
     scene.play(Transform(scatter_points_meaned, scatter_points_transformed))
-
-    scene.wait(1)
 
 
 class PCAExplained(ThreeDScene):
@@ -133,4 +181,9 @@ class PCAExplained(ThreeDScene):
         # TODO: Since we re-use this scene multiple times throughout the video, we want to make the rendering of the formulas optional.
         # TODO: When performing the transformation, move the camera so that we watch the transfromation from the direction of first eigenvector.
         # --> Ideally this should be calculated on the fly so that the scene also works with other datasets.
-        pca_graph(self)
+        pca_graph(self, formulas=False, variance_vectors=False, show_scree_plot=True)
+
+
+class PCAExplainedDetail(ThreeDScene):
+    def construct(self):
+        pca_graph(self, formulas=True, variance_vectors=True, show_scree_plot=True)
