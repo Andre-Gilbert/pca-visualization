@@ -162,12 +162,40 @@ def pca_graph(
         scene.move_camera(phi=phi, theta=theta, run_time=4)
         scene.wait(1)
 
+    
+    scatter_points.set_opacity(0)
+    # Add the formula to the right
+
+    shift_amount = 3
+    scale_factor = 0.9
+    if formulas:
+        # Play the shift and scale animations in parallel
+        group = VGroup(axes, scatter_points_meaned, scatter_points, *axes_arrows)
+        scene.play(group.animate.scale(scale_factor))
+        scene.play(group.animate.shift(RIGHT * shift_amount))
+
+        # First, show the centering formula
+        transformation_formula = Formulas.TRANSFORMATION.to_edge(RIGHT)
+        scene.add_fixed_in_frame_mobjects(transformation_formula)
+        scene.play(Write(transformation_formula))
+        scene.wait(1)
+
     # Animate transformation
     scatter_points_transformed = VGroup(
         *[Dot3D(point=np.array(point), color=BLUE, radius=0.05) for point in points_transformed]
     )
-    scatter_points.set_opacity(0)
+
+    if formulas:
+        scatter_points_transformed.shift(RIGHT * shift_amount)
+        scatter_points_transformed.scale(scale_factor)
+
     scene.play(Transform(scatter_points_meaned, scatter_points_transformed))
+
+    # Move the plot back to the center after the transformation
+    if formulas:
+        scene.play(Unwrite(transformation_formula))
+        scene.play(group.animate.scale(1/scale_factor))
+        scene.play(group.animate.center())
 
     scene.wait(0.5)
     

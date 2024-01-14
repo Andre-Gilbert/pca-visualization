@@ -19,3 +19,4 @@ class Formulas:
     COVARIANCE_SIMPLIFIED = MathTex(r"\operatorname{cov}[X_i, X_j] = \operatorname{E}[X_i \cdot X_j]")
     COVARIANCE_MATRIX = MathTex(r"Cov(B) = \frac{1}{m}(B^TB)")
     PRINCIPAL_COMPONENTS = MathTex(r"T = (E_b^T \cdot B^T)^T")
+    TRANSFORMATION = MathTex(r"B_t = (E_b^T * B^T)^T")
