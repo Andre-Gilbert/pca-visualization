@@ -19,7 +19,7 @@ class SigmaCreature(SVGMobject):
     def __init__(self, creature_height: int = 2, **kwargs):
         "Creature initialization"
 
-        SVGMobject.__init__(self, file_name="src/assets/sigma_blue.svg", **kwargs)
+        SVGMobject.__init__(self, file_name="./assets/sigma_blue.svg", **kwargs)
         self.set_height(creature_height)
 
         # Create a separate VMobject for the body
