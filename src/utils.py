@@ -119,3 +119,46 @@ def calculate_view_pos(vector: np.ndarray, ndigits: int = 3) -> tuple[float]:
         theta = np.arctan(vector[1] / vector[0])
 
     return round(phi, ndigits=ndigits), round(theta, ndigits=ndigits)
+
+
+def get_axes(scene: ThreeDScene, animation: FadeIn or Create = Create) -> tuple:
+    """
+    Returns axes with arrow tips on all ends.
+    This function animates the creation of the axes and the initial scatter points
+    and begins an ambient rotation.
+    """
+
+    # Create axes
+    axes = ThreeDAxes(tips=False).set_opacity(0)
+
+    # Create double arrows for each axis
+    axis_extension_for_arrow = .6
+    x_axis_double_arrow = DoubleArrow(axes.x_axis.get_end() + (axis_extension_for_arrow, 0, 0), axes.x_axis.get_start() + (-axis_extension_for_arrow, 0, 0), buff=0, stroke_width=2.0)
+    y_axis_double_arrow = DoubleArrow(axes.y_axis.get_end() + (0, axis_extension_for_arrow, 0), axes.y_axis.get_start() + (0, -axis_extension_for_arrow, 0), buff=0, stroke_width=2.0)
+    
+    # Z-Axis arrow was buggy using the DoubleArrow (buckling tip on one side)
+    # Thus, we are using two seperate arrows.
+    z_axis_negative_arrow = Arrow((0, 0, 0), axes.z_axis.get_start() + (0, 0, -axis_extension_for_arrow), buff=0, stroke_width=2.0)
+    z_axis_positive_arrow = Arrow((0, 0, 0), axes.z_axis.get_end() + (0, 0, axis_extension_for_arrow), buff=0, stroke_width=2.0)
+
+    axes_arrows = x_axis_double_arrow, y_axis_double_arrow, z_axis_negative_arrow, z_axis_positive_arrow
+
+    # Add arrows to the scene
+    scene.add(axes, *axes_arrows)
+
+    # Optionally, add labels or other elements to enhance the visualization
+    # They look a little ugly in 3D though.
+    # x_label = axes.get_x_axis_label("x")
+    # y_label = axes.get_y_axis_label("y")
+    # z_label = axes.get_z_axis_label("z")
+    # scene.add(x_label, y_label, z_label)
+
+    scene.set_camera_orientation(phi=75 * DEGREES, theta=30 * DEGREES)
+    scene.begin_ambient_camera_rotation(rate=0.2)
+
+    scene.play(animation(x_axis_double_arrow), animation(y_axis_double_arrow), animation(z_axis_negative_arrow), animation(z_axis_positive_arrow))
+    axes = axes.set_opacity(1)
+    scene.play(animation(axes))
+    scene.wait(.5)
+
+    return scene, axes, axes_arrows
