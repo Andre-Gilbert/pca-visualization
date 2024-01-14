@@ -2,7 +2,7 @@
 from manim import *
 
 from constants import Formulas, FontSize
-from utils import get_pca_elements, calculate_view_pos, fade_out_scene, get_axes
+from utils import get_pca_elements, calculate_view_pos, fade_out_scene, get_axes, create_schema_cov_matrix
 
 
 def pca_graph(
@@ -14,7 +14,7 @@ def pca_graph(
     ):
 
     points_data, points_meaned, cov_matrix, (eigen_values_sorted, eigen_vectors_sorted), points_transformed = get_pca_elements()
-    scene, axes, axes_arrows = get_axes(scene, points_data, Create)
+    scene, axes, axes_arrows = get_axes(scene, Create)
 
     # Create scatter plot using Points class
     scatter_points = VGroup(*[Dot3D(point=np.array(point), color=BLUE, radius=0.05) for point in points_data])
@@ -74,12 +74,31 @@ def pca_graph(
         scene.play(ReplacementTransform(cov_formula, cov_formula_simplified))
         scene.add_fixed_in_frame_mobjects(cov_formula_simplified)
         scene.wait(1)
+        
+        # Schematic Cov Matrix to the right
+        cov_schema = create_schema_cov_matrix().set_opacity(0)
+        scene.add_fixed_in_frame_mobjects(cov_schema)
+
+        # First fade out the description
         scene.play(FadeOut(cov_description))
         scene.wait(1)
+
+        # Move down the formula for the cov schema
+        scene.play(cov_formula_simplified.animate.next_to(cov_schema, DOWN, buff=0.5))
+        scene.wait(0.5)
+
+        cov_schema = cov_schema.set_opacity(1)
+        scene.play(Write(cov_schema))
+        scene.wait(1)
+
+        scene.play(FadeOut(cov_schema))
+        scene.play(cov_formula_simplified.animate.move_to(ORIGIN))
+
         cov_formula_matrix = Formulas.COVARIANCE_MATRIX
         scene.play(ReplacementTransform(cov_formula_simplified, cov_formula_matrix))
         scene.add_fixed_in_frame_mobjects(cov_formula_matrix)
         scene.wait(1)
+
         scene.play(FadeOut(cov_formula_matrix))
         scene.wait(0.5)
         
@@ -207,7 +226,7 @@ class Intuition(ThreeDScene):
 class PCAExplained(ThreeDScene):
     def construct(self):
         # TODO: Add the corresponding formulas.
-        pca_graph(self, formulas=False, variance_vectors=False, show_scree_plot=False, change_view_on_transformation=False)
+        pca_graph(self, formulas=True, variance_vectors=False, show_scree_plot=False, change_view_on_transformation=False)
 
 
 class PCAExplainedDetail(ThreeDScene):

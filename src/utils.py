@@ -65,6 +65,28 @@ def create_large_table():
     return Tex(table).shift(LEFT * 1.5)
 
 
+def create_schema_cov_matrix():
+    table = r"""
+        \begin{table}[h]
+            \centering
+            \begin{tabular}{|c|c|c|c|}
+                \hline
+                $$ & $X_1$ & $X_2$ & $X_3$ \\
+                \hline
+                $X_1$ & $\operatorname{cov}[X_1, X_1]$ & $\operatorname{cov}[X_1, X_2]$ & $\operatorname{cov}[X_1, X_3]$ \\
+                \hline
+                $X_2$ & $\operatorname{cov}[X_2, X_1]$ & $\operatorname{cov}[X_2, X_2]$ & $\operatorname{cov}[X_2, X_3]$ \\
+                \hline
+                $X_3$ & $\operatorname{cov}[X_3, X_1]$ & $\operatorname{cov}[X_3, X_2]$ & $\operatorname{cov}[X_3, X_3]$ \\
+                \hline
+            \end{tabular}
+            \caption{Schematic covariance matrix}
+            \label{tab:cov_schema}
+        \end{table}
+        """
+    return Tex(table)
+
+
 def get_pca_elements(data_path: str = "assets/data_points.csv") -> tuple:
     "Returns all elements that are part of the PCA calculation for the dataset at the specified path."
 
