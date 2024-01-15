@@ -10,7 +10,7 @@ def fade_out_scene(scene):
 
 
 ### For Intro Scene ###
-def create_wind_turbine(scene):
+def create_wind_turbine():
     "Create a wind turbine with three blades."
     base = Rectangle(width=0.1, height=2, color=LIGHT_GRAY, fill_opacity=1)
 

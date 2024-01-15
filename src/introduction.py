@@ -24,7 +24,7 @@ class Introduction(Scene):
         self.wait(1)
         
         # First, we only define the turbine.
-        wind_turbine = create_wind_turbine(self)
+        wind_turbine = create_wind_turbine()
         self.add(wind_turbine)
         wind_turbine.to_edge(RIGHT*1.5 + UP*2)
         self.play(Rotate(wind_turbine[1:4], 2 * PI, about_point=wind_turbine[1:4].get_center_of_mass()), run_time=5)
