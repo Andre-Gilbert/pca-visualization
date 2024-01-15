@@ -1,8 +1,8 @@
 """PCA scene."""
 from manim import *
-
+from sigma_creature import SigmaCreature
 from constants import Formulas, FontSize
-from utils import get_pca_elements, calculate_view_pos, fade_out_scene, get_axes, create_schema_cov_matrix
+from utils import get_pca_elements, calculate_view_pos, fade_out_scene, get_axes, create_schema_cov_matrix, create_wind_turbine
 
 
 def pca_graph(
@@ -10,18 +10,23 @@ def pca_graph(
         formulas: bool = True, 
         variance_vectors: bool = True, 
         show_scree_plot: bool = True,
-        change_view_on_transformation: bool = True
+        change_view_on_transformation: bool = True,
+        fast: bool = False
     ):
 
     points_data, points_meaned, cov_matrix, (eigen_values_sorted, eigen_vectors_sorted), points_transformed = get_pca_elements()
-    scene, axes, axes_arrows = get_axes(scene, Create)
+    if fast:
+        scene, axes, axes_arrows = get_axes(scene, FadeIn)
+    else:
+        scene, axes, axes_arrows = get_axes(scene, Create)
 
     # Create scatter plot using Points class
     scatter_points = VGroup(*[Dot3D(point=np.array(point), color=BLUE, radius=0.05) for point in points_data])
 
     # Add scatter plot to the scene
     scene.play(Create(scatter_points))
-    scene.wait(1)
+    if not fast:
+        scene.wait(1)
 
     # Move the 3D plot to the left a little to make space for the formulas
     shift_amount = 2
@@ -29,7 +34,10 @@ def pca_graph(
     if formulas:
         # Stop rotation for upcoming animations
         scene.stop_ambient_camera_rotation()
-        scene.move_camera(phi=75 * DEGREES, theta=135 * DEGREES, rate_func=rate_functions.ease_out_cubic, run_time=5)
+        if fast:
+            scene.move_camera(phi=75 * DEGREES, theta=135 * DEGREES, rate_func=rate_functions.ease_out_cubic, run_time=2)
+        else:
+            scene.move_camera(phi=75 * DEGREES, theta=135 * DEGREES, rate_func=rate_functions.ease_out_cubic, run_time=5)
 
         # Play the shift and scale animations in parallel
         group = VGroup(axes, scatter_points, *axes_arrows)
@@ -41,7 +49,8 @@ def pca_graph(
         scene.add_fixed_in_frame_mobjects(data_centering_formula)
         scene.play(Write(data_centering_formula))
 
-    scene.wait(1)
+    if not fast:
+        scene.wait(1)
 
     # Now set morph the points into centered position around the origin.
     scatter_points_meaned = VGroup(*[Dot3D(point=np.array(point), color=BLUE, radius=0.05) for point in points_meaned])
@@ -52,62 +61,68 @@ def pca_graph(
 
     scene.play(Transform(scatter_points, scatter_points_meaned))
 
-    scene.wait(1)
+    if not fast:
+        scene.wait(1)
 
     if formulas:
         # First let the axes and points disappear temoprarily.
         group = VGroup(scatter_points, scatter_points_meaned, axes, *axes_arrows)
-        scene.play(FadeOut(group), Unwrite(data_centering_formula))
+        if not fast:
+            scene.play(FadeOut(group), Unwrite(data_centering_formula))
+        else:
+            scene.play(Unwrite(data_centering_formula))
 
-        # Now show the derivation of the covariance calculation.
-        cov_formula = Formulas.COVARIANCE.set_opacity(opacity=0)
-        cov_description = Formulas.COVARIANCE_DESCRIPTION.next_to(cov_formula, UP*1.3)
-        scene.add_fixed_in_frame_mobjects(cov_formula)
-        scene.add_fixed_in_frame_mobjects(cov_description)
-        scene.play(Write(cov_description, run_time=4))
-        scene.wait(0.5)
-        cov_formula.set_opacity(opacity=1)
-        scene.play(Write(cov_formula))
-        scene.wait(2)
+        if not fast:
+            # Now show the derivation of the covariance calculation.
+            cov_formula = Formulas.COVARIANCE.set_opacity(opacity=0)
+            cov_description = Formulas.COVARIANCE_DESCRIPTION.next_to(cov_formula, UP*1.3)
+            scene.add_fixed_in_frame_mobjects(cov_formula)
+            scene.add_fixed_in_frame_mobjects(cov_description)
+            scene.play(Write(cov_description, run_time=4))
+            scene.wait(0.5)
+            cov_formula.set_opacity(opacity=1)
+            scene.play(Write(cov_formula))
+            scene.wait(2)
 
-        cov_formula_simplified = Formulas.COVARIANCE_SIMPLIFIED
-        scene.play(ReplacementTransform(cov_formula, cov_formula_simplified))
-        scene.add_fixed_in_frame_mobjects(cov_formula_simplified)
-        scene.wait(1)
-        
-        # Schematic Cov Matrix to the right
-        cov_schema = create_schema_cov_matrix().set_opacity(0)
-        scene.add_fixed_in_frame_mobjects(cov_schema)
+            cov_formula_simplified = Formulas.COVARIANCE_SIMPLIFIED
+            scene.play(ReplacementTransform(cov_formula, cov_formula_simplified))
+            scene.add_fixed_in_frame_mobjects(cov_formula_simplified)
+            scene.wait(1)
+            
+            # Schematic Cov Matrix to the right
+            cov_schema = create_schema_cov_matrix().set_opacity(0)
+            scene.add_fixed_in_frame_mobjects(cov_schema)
 
-        # First fade out the description
-        scene.play(FadeOut(cov_description))
-        scene.wait(1)
+            # First fade out the description
+            scene.play(FadeOut(cov_description))
+            scene.wait(1)
 
-        # Move down the formula for the cov schema
-        scene.play(cov_formula_simplified.animate.next_to(cov_schema, DOWN, buff=0.5))
-        scene.wait(0.5)
+            # Move down the formula for the cov schema
+            scene.play(cov_formula_simplified.animate.next_to(cov_schema, DOWN, buff=0.5))
+            scene.wait(0.5)
 
-        cov_schema = cov_schema.set_opacity(1)
-        scene.play(Write(cov_schema))
-        scene.wait(1)
+            cov_schema = cov_schema.set_opacity(1)
+            scene.play(Write(cov_schema))
+            scene.wait(1)
 
-        scene.play(FadeOut(cov_schema))
-        scene.play(cov_formula_simplified.animate.move_to(ORIGIN))
+            scene.play(FadeOut(cov_schema))
+            scene.play(cov_formula_simplified.animate.move_to(ORIGIN))
 
-        cov_formula_matrix = Formulas.COVARIANCE_MATRIX
-        scene.play(ReplacementTransform(cov_formula_simplified, cov_formula_matrix))
-        scene.add_fixed_in_frame_mobjects(cov_formula_matrix)
-        scene.wait(1)
+            cov_formula_matrix = Formulas.COVARIANCE_MATRIX
+            scene.play(ReplacementTransform(cov_formula_simplified, cov_formula_matrix))
+            scene.add_fixed_in_frame_mobjects(cov_formula_matrix)
+            scene.wait(1)
 
-        scene.play(FadeOut(cov_formula_matrix))
-        scene.wait(0.5)
+            scene.play(FadeOut(cov_formula_matrix))
+            scene.wait(0.5)
         
         # Get points back to original state
         group.center()
         group.scale(1/scale_factor)
         
-        scene.play(FadeIn(group))
-        scene.wait(2)
+        if not fast:
+            scene.play(FadeIn(group))
+            scene.wait(2)
 
 
     if variance_vectors:
@@ -123,16 +138,19 @@ def pca_graph(
             eigenvector_lines.add(infinite_line_negative)
 
         scene.play(Create(eigenvector_lines))
-        scene.wait(1)
+        if not fast:
+            scene.wait(1)
 
         # Add eigenvectors
         eigenvector_arrows = VGroup(*[Arrow3D(start=ORIGIN, end=eigenvector, color=color, thickness=0.015, base_radius=0.05) for eigenvector, color in zip(eigen_vectors_sorted, [RED, GREEN, BLUE])])
         scene.play(Create(eigenvector_arrows))
-        scene.wait(1)
+        if not fast:
+            scene.wait(1)
 
         # Fade out the lines that got replaced by the arrows.
         scene.play(FadeOut(eigenvector_lines))
-        scene.wait(1)
+        if not fast:
+            scene.wait(1)
 
         # Scale eigenvectors by eigenvalues and display eigenvalues
         scaled_eigenvectors = VGroup()
@@ -146,7 +164,10 @@ def pca_graph(
         # eigenvalue_labels = VGroup(*[Text(f"{eigenvalue:.2f}", color=WHITE).next_to(scaled_eigenvector, direction=DOWN, buff=0.1) for eigenvalue, scaled_eigenvector in zip(eigen_values_sorted, scaled_eigenvectors)])
 
         scene.play(Transform(eigenvector_arrows, scaled_eigenvectors))
-        scene.wait(2)
+        if not fast:
+            scene.wait(2)
+        else:
+            scene.wait(1)
 
         scene.play(FadeOut(scaled_eigenvectors), FadeOut(eigenvector_arrows))
         if change_view_on_transformation:
@@ -172,13 +193,14 @@ def pca_graph(
         # Play the shift and scale animations in parallel
         group = VGroup(axes, scatter_points_meaned, scatter_points, *axes_arrows)
         scene.play(group.animate.scale(scale_factor))
-        scene.play(group.animate.shift(RIGHT * shift_amount))
+        scene.play(group.animate.shift(LEFT * shift_amount))
 
         # First, show the centering formula
         transformation_formula = Formulas.TRANSFORMATION.to_edge(RIGHT)
         scene.add_fixed_in_frame_mobjects(transformation_formula)
         scene.play(Write(transformation_formula))
-        scene.wait(1)
+        if not fast:
+            scene.wait(1)
 
     # Animate transformation
     scatter_points_transformed = VGroup(
@@ -186,7 +208,7 @@ def pca_graph(
     )
 
     if formulas:
-        scatter_points_transformed.shift(RIGHT * shift_amount)
+        scatter_points_transformed.shift(LEFT * shift_amount)
         scatter_points_transformed.scale(scale_factor)
 
     scene.play(Transform(scatter_points_meaned, scatter_points_transformed))
@@ -210,6 +232,19 @@ def pca_graph(
         fade_out_scene(scene)
         scree_plot(scene, eigen_values_sorted)
         scene.wait(1)
+
+    # For fast, i.e. the conclusion, we want to add the data scientist and the windmill again.
+    if fast:    
+        creature = SigmaCreature(creature_height=2).to_edge(DR)
+        scene.add_fixed_in_frame_mobjects(creature)
+        scene.wait(2)
+
+        # First, we only define the turbine.
+        wind_turbine = create_wind_turbine()
+        scene.add_fixed_in_frame_mobjects(wind_turbine)
+        wind_turbine.to_edge(RIGHT*1.5 + UP*2)
+        scene.play(Rotate(wind_turbine[1:4], 3 * PI, about_point=wind_turbine[1:4].get_center_of_mass()), run_time=7.5)
+
 
 
 def scree_plot(scene: ThreeDScene, eigen_values: np.ndarray) -> None:
@@ -251,12 +286,11 @@ class Intuition(ThreeDScene):
         pca_graph(self, formulas=False, variance_vectors=False, show_scree_plot=False, change_view_on_transformation=True)
 
 
-class PCAExplained(ThreeDScene):
+class PCAExplainedFast(ThreeDScene):
     def construct(self):
-        # TODO: Add the corresponding formulas.
-        pca_graph(self, formulas=True, variance_vectors=False, show_scree_plot=False, change_view_on_transformation=False)
+        pca_graph(self, formulas=True, variance_vectors=True, show_scree_plot=False, change_view_on_transformation=False, fast=True)
 
 
 class PCAExplainedDetail(ThreeDScene):
     def construct(self):
-        pca_graph(self, formulas=True, variance_vectors=True, show_scree_plot=True)
+        pca_graph(self, formulas=True, variance_vectors=True, show_scree_plot=True, change_view_on_transformation=True)
