@@ -16,7 +16,7 @@ def pca_graph(
 
     points_data, points_meaned, cov_matrix, (eigen_values_sorted, eigen_vectors_sorted), points_transformed = get_pca_elements()
     if fast:
-        scene, axes, axes_arrows = get_axes(scene, FadeIn)
+        scene, axes, axes_arrows = get_axes(scene, FadeIn, ambient_rotation=False)
     else:
         scene, axes, axes_arrows = get_axes(scene, Create)
 
@@ -24,8 +24,10 @@ def pca_graph(
     scatter_points = VGroup(*[Dot3D(point=np.array(point), color=BLUE, radius=0.05) for point in points_data])
 
     # Add scatter plot to the scene
-    scene.play(Create(scatter_points))
-    if not fast:
+    if fast:
+        scene.move_camera(phi=75 * DEGREES, theta=135 * DEGREES, rate_func=rate_functions.ease_in_out_cubic, run_time=4, added_anims=[Create(scatter_points)])
+    else:
+        scene.play(Create(scatter_points))
         scene.wait(1)
 
     # Move the 3D plot to the left a little to make space for the formulas
@@ -33,10 +35,8 @@ def pca_graph(
     scale_factor = 0.8
     if formulas:
         # Stop rotation for upcoming animations
-        scene.stop_ambient_camera_rotation()
-        if fast:
-            scene.move_camera(phi=75 * DEGREES, theta=135 * DEGREES, rate_func=rate_functions.ease_out_cubic, run_time=2)
-        else:
+        if not fast:
+            scene.stop_ambient_camera_rotation()
             scene.move_camera(phi=75 * DEGREES, theta=135 * DEGREES, rate_func=rate_functions.ease_out_cubic, run_time=5)
 
         # Play the shift and scale animations in parallel
@@ -59,7 +59,7 @@ def pca_graph(
         scatter_points_meaned.shift(RIGHT * shift_amount)
         scatter_points_meaned.scale(scale_factor)
 
-    scene.play(Transform(scatter_points, scatter_points_meaned))
+    scene.play(Transform(scatter_points, scatter_points_meaned)) 
 
     if not fast:
         scene.wait(1)
@@ -117,8 +117,12 @@ def pca_graph(
             scene.wait(0.5)
         
         # Get points back to original state
-        group.center()
-        group.scale(1/scale_factor)
+        if not fast:
+            group.center()
+            group.scale(1/scale_factor)
+        else:
+            scene.play(group.animate.center())
+            scene.play(group.animate.scale(1/scale_factor))
         
         if not fast:
             scene.play(FadeIn(group))
@@ -170,7 +174,7 @@ def pca_graph(
             scene.wait(1)
 
         scene.play(FadeOut(scaled_eigenvectors), FadeOut(eigenvector_arrows))
-        if change_view_on_transformation:
+        if change_view_on_transformation or fast:
             scene.stop_ambient_camera_rotation()
         scene.wait(0.5)
 
@@ -190,10 +194,14 @@ def pca_graph(
     shift_amount = 3
     scale_factor = 0.9
     if formulas:
-        # Play the shift and scale animations in parallel
+        # Play the shift and scale animations
         group = VGroup(axes, scatter_points_meaned, scatter_points, *axes_arrows)
         scene.play(group.animate.scale(scale_factor))
-        scene.play(group.animate.shift(LEFT * shift_amount))
+        if fast:
+            scene.move_camera(phi=75 * DEGREES, theta=135 * DEGREES, rate_func=rate_functions.ease_in_out_cubic, run_time=3)
+            scene.play(group.animate.shift(RIGHT * shift_amount))
+        else:
+            scene.play(group.animate.shift(LEFT * shift_amount))
 
         # First, show the centering formula
         transformation_formula = Formulas.TRANSFORMATION.to_edge(RIGHT)
@@ -208,7 +216,10 @@ def pca_graph(
     )
 
     if formulas:
-        scatter_points_transformed.shift(LEFT * shift_amount)
+        if fast:
+            scatter_points_transformed.shift(RIGHT * shift_amount)
+        else:
+            scatter_points_transformed.shift(LEFT * shift_amount)
         scatter_points_transformed.scale(scale_factor)
 
     scene.play(Transform(scatter_points_meaned, scatter_points_transformed))
@@ -224,6 +235,8 @@ def pca_graph(
     # Show off how now most of the variance is on the first two dimensions.
     if change_view_on_transformation:
         scene.move_camera(phi=90 * DEGREES, theta=theta, run_time=3)
+        scene.begin_ambient_camera_rotation(0.2)
+    elif fast:
         scene.begin_ambient_camera_rotation(0.2)
 
     scene.wait(5)

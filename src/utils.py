@@ -143,7 +143,7 @@ def calculate_view_pos(vector: np.ndarray, ndigits: int = 3) -> tuple[float]:
     return round(phi, ndigits=ndigits), round(theta, ndigits=ndigits)
 
 
-def get_axes(scene: ThreeDScene, animation: FadeIn or Create = Create) -> tuple:
+def get_axes(scene: ThreeDScene, animation: FadeIn or Create = Create, ambient_rotation: bool = True) -> tuple:
     """
     Returns axes with arrow tips on all ends.
     This function animates the creation of the axes and the initial scatter points
@@ -151,7 +151,11 @@ def get_axes(scene: ThreeDScene, animation: FadeIn or Create = Create) -> tuple:
     """
 
     # Create axes
-    axes = ThreeDAxes(tips=False).set_opacity(0)
+    axes = ThreeDAxes(
+        tips=False,
+        x_length=8,
+        y_length=8
+    ).set_opacity(0)
 
     # Create double arrows for each axis
     axis_extension_for_arrow = .6
@@ -176,7 +180,8 @@ def get_axes(scene: ThreeDScene, animation: FadeIn or Create = Create) -> tuple:
     # scene.add(x_label, y_label, z_label)
 
     scene.set_camera_orientation(phi=75 * DEGREES, theta=30 * DEGREES)
-    scene.begin_ambient_camera_rotation(rate=0.2)
+    if ambient_rotation:
+        scene.begin_ambient_camera_rotation(rate=0.2)
 
     scene.play(animation(x_axis_double_arrow), animation(y_axis_double_arrow), animation(z_axis_negative_arrow), animation(z_axis_positive_arrow))
     axes = axes.set_opacity(1)
