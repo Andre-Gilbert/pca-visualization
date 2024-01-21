@@ -247,16 +247,19 @@ def pca_graph(
         scene.wait(1)
 
     # For fast, i.e. the conclusion, we want to add the data scientist and the windmill again.
-    if fast:    
+    if fast:
+        scene.stop_ambient_camera_rotation()
         creature = SigmaCreature(creature_height=2).to_edge(DR)
         scene.add_fixed_in_frame_mobjects(creature)
+        scene.play(FadeIn(creature))
         scene.wait(2)
 
         # First, we only define the turbine.
         wind_turbine = create_wind_turbine()
         scene.add_fixed_in_frame_mobjects(wind_turbine)
         wind_turbine.to_edge(RIGHT*1.5 + UP*2)
-        scene.play(Rotate(wind_turbine[1:4], 3 * PI, about_point=wind_turbine[1:4].get_center_of_mass()), run_time=7.5)
+        scene.play(FadeIn(wind_turbine))
+        scene.play(Rotate(wind_turbine[1:4], 47.6 * PI, about_point=wind_turbine[1:4].get_center_of_mass()), run_time=119) # 1 PI = 2.5s runtime
 
 
 
