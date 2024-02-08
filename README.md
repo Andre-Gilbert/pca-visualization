@@ -4,7 +4,7 @@ This repository contains Python code for visualizing Principal Component Analysi
 
 ## Get Started
 
-Make sure your version of Python >= 3.10 and you have installed all the necessary packages which can be found in the [Manim installation guide](https://docs.manim.community/en/stable/installation.html). 
+Make sure your version of **Python >= 3.10** and you have installed all the necessary packages which can be found in the [Manim installation guide](https://docs.manim.community/en/stable/installation.html). 
 
 To install the packages run:
 
