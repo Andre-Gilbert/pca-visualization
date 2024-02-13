@@ -3,6 +3,7 @@
 This repository contains Python code for visualizing Principal Component Analysis using [Manim](https://github.com/ManimCommunity/manim). Principal Component Analysis is a powerful statistical technique used for dimensionality reduction and feature extraction in data analysis. The visualization provided offer detailed insights into the workings of PCA, illustrating how correlated variables are transformed into uncorrelated principal components, capturing the maximum variance in the data.
 
 - [PCA video](docs/PCA.mp4)
+- [PCA paper](docs/PCA_paper.mp4)
 
 ## Get Started
 
